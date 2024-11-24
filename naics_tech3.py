@@ -63,7 +63,7 @@ with col1:
 
             # Display a loading message
             with st.spinner("NAICS code loading..."):
-                api_key = st.secrets["general"]["APIkey"]
+                api_key = st.secrets["general"]["APIKey"]
                 client = Groq(api_key=api_key)
 
                 # Prompt preparation

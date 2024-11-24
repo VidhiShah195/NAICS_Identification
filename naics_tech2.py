@@ -78,7 +78,7 @@ with col1:
 
             # Display a loading message
             with st.spinner("NAICS code loading..."):
-                api_key = st.secrets["general"]["APIkey"]
+                api_key = st.secrets["general"]["APIKey"]
                 client = Groq(api_key=api_key)
 
                 relevant_naics = get_relevant_naics(combined_content, naics_embeddings, naics_df)
