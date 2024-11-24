@@ -4,12 +4,12 @@ import re
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
-import re, time, os
+import re, time
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
-import os
-from dotenv import load_dotenv
+# import os
+# from dotenv import load_dotenv
 from groq import Groq
-from selenium.webdriver.firefox.options import Options
+import requests
 
 
 #progress bar:
@@ -27,11 +27,9 @@ def progress_bar(progress):
 
 
 #SCRAPER FUNCTIONS/IMPORTS/COMPONENTS------------------------------------------------------------------------------
-options = Options()
-options.headless = True 
 
 #define driver
-driver = webdriver.Firefox(options=options)
+driver = webdriver.Firefox()
 
 #get soup for page
 def soupify_url(url, driver=driver):
@@ -42,15 +40,20 @@ def soupify_url(url, driver=driver):
 def scraper(link, driver=driver):
     print(f"Scraping {link}")
 
-    driver.get(link)
-    time.sleep(2)
+    response = requests.get(link)
+    soup = BeautifulSoup(response.text, 'html.parser')
 
-    html = driver.page_source
-    raw_soup = BeautifulSoup(html, features="html.parser")
-    
-    paragraphs = raw_soup.find_all('p')
-
+    paragraphs = soup.find_all('p')
     return " ".join([p.get_text(" ", strip=True) for p in paragraphs])
+    # driver.get(link)
+    # time.sleep(2)
+
+    # html = driver.page_source
+    # raw_soup = BeautifulSoup(html, features="html.parser")
+    
+    # paragraphs = raw_soup.find_all('p')
+
+    # return " ".join([p.get_text(" ", strip=True) for p in paragraphs])
 
 #make file name from url
 def file_name_from_url(url):
