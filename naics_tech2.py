@@ -90,37 +90,10 @@ with col1:
 
                 # Prompt preparation
                 website = f"{urls}"
-                user_prompt = f"""Given the data scraped from {website}, identify the most probable NAICS code for the company described. 
-                The NAICS code must be a valid and existing code from the NAICS hierarchy. 
-                Additionally, provide a bulleted list explaining how each part of the NAICS code was derived, including:
-                - The main economic sector
-                - The subsector
-                - The industry group
-                - The NAICS industry
-                - The national industry
-                Provide the explanation using keywords or phrases from the scraped data that contributed to identifying each part of the code. 
+                user_prompt = f"""Given the data that was scraped from {website}, identify the most probable NAICS code and NAICS title. ONLY PROVIDE THE NAICS CODE AND A NAICS CODE TITLE, NO OTHER TEXT. 
 
-                IMPORTANT: 
-                - Only predict officially recognized codes from the most recent NAICS classification.
-                - Do not include NAICS codes from other countries or regions.
-                - Do not fabricate or guess codes or numbers that do not follow the structure.
-                - Ensure the code reflects the latest updates to the system.
-
-                Here are some possible NAICS codes with their descriptions:
+                Here are some possible NAICS codes with their descriptions for this business:
                 {relevant_naics[['2022 NAICS Code', '2022 NAICS Keywords']]}
-                
-                FORMAT YOUR RESPONSE STRICTLY AS FOLLOWS:
-
-                [Valid NAICS Code]
-
-                Explanation:
-                - Main Economic Sector: [Sector] 
-                - Subsector: [Subsector]
-                - Industry Group: [Industry Group]
-                - NAICS Industry: [Industry Name]
-                - National Industry: [National Industry]
-
-                No other text or explanation is required.
                 """
 
                 completion = client.chat.completions.create(
