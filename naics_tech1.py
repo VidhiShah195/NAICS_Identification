@@ -9,6 +9,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 import os
 from dotenv import load_dotenv
 from groq import Groq
+from selenium.webdriver.firefox.options import Options
 
 
 #progress bar:
@@ -26,9 +27,11 @@ def progress_bar(progress):
 
 
 #SCRAPER FUNCTIONS/IMPORTS/COMPONENTS------------------------------------------------------------------------------
+options = Options()
+options.headless = True 
 
 #define driver
-driver = webdriver.Firefox()
+driver = webdriver.Firefox(options=options)
 
 #get soup for page
 def soupify_url(url, driver=driver):
