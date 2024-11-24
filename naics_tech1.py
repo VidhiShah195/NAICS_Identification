@@ -62,7 +62,7 @@ with col1:
             with st.spinner("NAICS code loading..."):
                 # load_dotenv()
                 # api_key = os.getenv("APIkey")
-                api_key = st.secrets["general"]["APIkey"]
+                api_key = st.secrets["general"]["APIKey"]
                 client = Groq(api_key=api_key)
 
                 # Prompt preparation
