@@ -1,13 +1,8 @@
 #imports
 import streamlit as st
-import re
-import time
-from bs4 import BeautifulSoup
-import re, time
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
+from transformers import pipeline
 from groq import Groq
 from pyppeteer import launch
-import asyncio
 import subprocess
 import sys
 import json
@@ -90,10 +85,37 @@ with col1:
 
                 # Prompt preparation
                 website = f"{urls}"
-                user_prompt = f"""Given the data that was scraped from {website}, identify the most probable NAICS code and NAICS title. ONLY PROVIDE THE NAICS CODE AND A NAICS CODE TITLE, NO OTHER TEXT. 
+                user_prompt = f"""Given the data scraped from {website}, identify the most probable NAICS code for the company described. 
+                The NAICS code must be a valid and existing code from the NAICS hierarchy. 
+                Additionally, provide a bulleted list explaining how each part of the NAICS code was derived, including:
+                - The main economic sector
+                - The subsector
+                - The industry group
+                - The NAICS industry
+                - The national industry
+                Provide the explanation using keywords or phrases from the scraped data that contributed to identifying each part of the code. 
 
-                Here are some possible NAICS codes with their descriptions for this business:
+                IMPORTANT: 
+                - Only predict officially recognized codes from the most recent NAICS classification.
+                - Do not include NAICS codes from other countries or regions.
+                - Do not fabricate or guess codes or numbers that do not follow the structure.
+                - Ensure the code reflects the latest updates to the system.
+
+                Here are some possible NAICS codes with their descriptions:
                 {relevant_naics[['2022 NAICS Code', '2022 NAICS Keywords']]}
+                
+                FORMAT YOUR RESPONSE STRICTLY AS FOLLOWS:
+
+                [Valid NAICS Code]
+
+                Explanation:
+                - Main Economic Sector: [Sector] 
+                - Subsector: [Subsector]
+                - Industry Group: [Industry Group]
+                - NAICS Industry: [Industry Name]
+                - National Industry: [National Industry]
+
+                No other text or explanation is required.
                 """
 
                 completion = client.chat.completions.create(
@@ -103,7 +125,7 @@ with col1:
                         {"role": "user", "content": user_prompt}
                         ],
                     temperature=1,
-                    max_tokens=24,
+                    max_tokens=1024,
                     stop=None
                 )    
 
@@ -122,8 +144,6 @@ with col1:
 
 with col2:
     st.header("Instructions", divider="red")
-    st.markdown('''
-                ***Please do not close the Firefox window that opens with this streamlit app until NAICS code is returned***''')
     st.markdown('''### Enter link(s) to website for company you want to classify''')
     st.markdown('''Enter at least one url that links to page(s) with the most information about the company you with to classify.
                 Company information is commonly found on "About", "Services", or "Home" pages.
