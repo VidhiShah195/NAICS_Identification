@@ -9,8 +9,6 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 # import os
 # from dotenv import load_dotenv
 from groq import Groq
-import requests
-
 
 #progress bar:
 def progress_bar(progress):
@@ -27,9 +25,12 @@ def progress_bar(progress):
 
 
 #SCRAPER FUNCTIONS/IMPORTS/COMPONENTS------------------------------------------------------------------------------
+from selenium.webdriver.firefox.options import Options
+firefox_options = Options()
+firefox_options.add_argument("--headless")
 
 #define driver
-driver = webdriver.Firefox()
+driver = webdriver.Firefox(options=firefox_options)
 
 #get soup for page
 def soupify_url(url, driver=driver):
@@ -40,20 +41,15 @@ def soupify_url(url, driver=driver):
 def scraper(link, driver=driver):
     print(f"Scraping {link}")
 
-    response = requests.get(link)
-    soup = BeautifulSoup(response.text, 'html.parser')
+    driver.get(link)
+    time.sleep(2)
 
-    paragraphs = soup.find_all('p')
-    return " ".join([p.get_text(" ", strip=True) for p in paragraphs])
-    # driver.get(link)
-    # time.sleep(2)
-
-    # html = driver.page_source
-    # raw_soup = BeautifulSoup(html, features="html.parser")
+    html = driver.page_source
+    raw_soup = BeautifulSoup(html, features="html.parser")
     
-    # paragraphs = raw_soup.find_all('p')
+    paragraphs = raw_soup.find_all('p')
 
-    # return " ".join([p.get_text(" ", strip=True) for p in paragraphs])
+    return " ".join([p.get_text(" ", strip=True) for p in paragraphs])
 
 #make file name from url
 def file_name_from_url(url):
