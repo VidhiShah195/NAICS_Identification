@@ -25,12 +25,9 @@ def progress_bar(progress):
 
 
 #SCRAPER FUNCTIONS/IMPORTS/COMPONENTS------------------------------------------------------------------------------
-from selenium.webdriver.firefox.options import Options
-firefox_options = Options()
-firefox_options.add_argument("--headless")
 
 #define driver
-driver = webdriver.Firefox(options=firefox_options)
+driver = webdriver.Firefox()
 
 #get soup for page
 def soupify_url(url, driver=driver):
