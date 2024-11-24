@@ -3,50 +3,58 @@ import streamlit as st
 import re
 import time
 from bs4 import BeautifulSoup
-from selenium import webdriver
+# from selenium import webdriver
 import re, time
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 # import os
 # from dotenv import load_dotenv
 from groq import Groq
+from pyppeteer import launch
+import asyncio
+import subprocess
+import sys
+import json
+# import nest_asyncio
+# nest_asyncio.apply()
 
 #progress bar:
-def progress_bar(progress):
+# def progress_bar(progress):
 
-    progress_bar_text = progress_text
-    my_bar=st.progress(0,text=progress_bar)
-    success_bar_text = success_text
+#     progress_bar_text = progress_text
+#     my_bar=st.progress(0,text=progress_bar)
+#     success_bar_text = success_text
 
-    for percent_complete in range(100):
-        time.sleep(0.01)
-        my_bar.progress(percent_complete+1, text=progress_bar_text)
-    time.sleep(1)
-    print(success_bar_text)
+#     for percent_complete in range(100):
+#         time.sleep(0.01)
+#         my_bar.progress(percent_complete+1, text=progress_bar_text)
+#     time.sleep(1)
+#     print(success_bar_text)
 
 
 #SCRAPER FUNCTIONS/IMPORTS/COMPONENTS------------------------------------------------------------------------------
 
 #define driver
-driver = webdriver.Firefox()
+# driver = webdriver.Firefox()
 
 #get soup for page
-def soupify_url(url, driver=driver):
-    driver.get(url)
-    return BeautifulSoup(driver.page_source, 'html.parser')
+# def soupify_url(url, driver=driver):
+#     driver.get(url)
+#     return BeautifulSoup(driver.page_source, 'html.parser')
 
 #scraper
-def scraper(link, driver=driver):
-    print(f"Scraping {link}")
+# def scraper(link, driver=driver):
+#     print(f"Scraping {link}")
 
-    driver.get(link)
-    time.sleep(2)
+#     driver.get(link)
+#     time.sleep(2)
 
-    html = driver.page_source
-    raw_soup = BeautifulSoup(html, features="html.parser")
+#     html = driver.page_source
+#     raw_soup = BeautifulSoup(html, features="html.parser")
     
-    paragraphs = raw_soup.find_all('p')
+#     paragraphs = raw_soup.find_all('p')
 
-    return " ".join([p.get_text(" ", strip=True) for p in paragraphs])
+#     return " ".join([p.get_text(" ", strip=True) for p in paragraphs])
+
 
 #make file name from url
 def file_name_from_url(url):
@@ -59,24 +67,24 @@ errored_urls = []
 scrape_list = []
 #-----------------------------------------------------------------------------------------------------------------
 #SUMMARIZER FUNCTIONS/COMPONENTS----------------------------------------------------------------------------------
-def summarize(text):
-    model_name = "allenai/led-large-16384-arxiv"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+# def summarize(text):
+#     model_name = "allenai/led-large-16384-arxiv"
+#     tokenizer = AutoTokenizer.from_pretrained(model_name)
+#     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-    pipe = pipeline("text2text-generation", model=model, tokenizer=tokenizer, device=-1)
+#     pipe = pipeline("text2text-generation", model=model, tokenizer=tokenizer, device=-1)
 
-    result = pipe(
-        text,
-        truncation=True, 
-        max_length=750, 
-        no_repeat_ngram_size=5, 
-        num_beams=3, 
-        early_stopping=True
-        )
+#     result = pipe(
+#         text,
+#         truncation=True, 
+#         max_length=750, 
+#         no_repeat_ngram_size=5, 
+#         num_beams=3, 
+#         early_stopping=True
+#         )
     
-    summary = result[0]['generated_text']
-    return summary
+#     summary = result[0]['generated_text']
+#     return summary
 
 #STREAMLIT--------------------------------------------------------------------------------------------------------
 st.set_page_config(layout="wide")
@@ -99,28 +107,42 @@ with col1:
         if company_url.startswith("http://") or company_url.startswith("https://"):
             st.success(f"Valid URL: {company_url}")
 
-            for url in urls:
-                try:
-                    with st.spinner("Scraping Page(s)"):
-                        processed_soup = scraper(url)
+            # for url in urls:
+            try:
+                with st.spinner("Scraping Page(s)"):
+                    # st.write('starting')
+                    python_executable = sys.executable
+                    result = subprocess.run([python_executable, 'scraper.py', json.dumps(urls)], capture_output=True, text=True)
+                    # processed_soup = asyncio.run(scraper(url))
+                    # st.write('finished scraping')
 
-                    #add scraped content to list
-                    scrape_list.append(processed_soup)
+                    try:
+                        scraped_data = json.loads(result.stdout)
+                    except json.JSONDecodeError as e:
+                        print("JSONDecodeError:", e)
+                        print("Output was not valid JSON. Returning empty list.")
+                        scraped_data = []
 
-                except Exception as e: 
-                    errored_urls.append(url)
-                    print("\n\nError: ", url, "could not be scraped because:")
-                    print(e, "\n\n")
-                    continue
-                #show all error urls
-                print("Errored urls:")
-                for url in errored_urls:
-                    print(url)
-            driver.close()
+                #add scraped content to list
+                # scrape_list.append(processed_soup)
+                    sources = [data['url'] for data in scraped_data]
+                    combined_content = "\n".join([data['content'] for data in scraped_data])
 
-            with st.spinner("Summarizing Information"):
-                summarized = summarize(text=scrape_list)
-                
+            except Exception as e: 
+                # errored_urls.append(url)
+                print("\n\nError: could not be scraped because:")
+                print(e, "\n\n")
+            #show all error urls
+            # print("Errored urls:")
+            # for url in errored_urls:
+            #     print(url)
+            # driver.close()
+
+            # st.write('starting output')
+
+            # with st.spinner("Summarizing Information"):
+            #     # summarized = summarize(text=scrape_list)
+            #     # summarized = summarize(text=combined_content)
             # Display a loading message
             with st.spinner("NAICS code loading..."):
                 # load_dotenv()
@@ -129,28 +151,31 @@ with col1:
                 client = Groq(api_key=api_key)
 
                 # Prompt preparation
-                website = f"{url}"
+                website = f"{urls}"
                 user_prompt = f"""
                     Given the data that was scraped from {website}, identify the most probable NAICS code and NAICS title. ONLY PROVIDE THE NAICS CODE AND A NAICS CODE TITLE, NO OTHER TEXT. 
                 """
 
                 completion = client.chat.completions.create(
-                    model="llama3-8b-8192",
+                    model="llama-3.1-70b-versatile",
                     messages=[
-                        {"role": "user", "content": summarized},
+                        # {"role": "user", "content": summarized},
+                        {"role": "user", "content": combined_content},
                         {"role": "user", "content": user_prompt}
                         ],
                     temperature=1,
-                    max_tokens=1024,
-                    top_p=1,
-                    stream=True,
+                    max_tokens=24,
+                    # top_p=1,
+                    # stream=True,
                     stop=None
                 )    
 
                 naics_code = ""
 
-                for chunk in completion:
-                    naics_code += chunk.choices[0].delta.content or ""
+                naics_code = completion.choices[0].message.content
+
+                # for chunk in completion:
+                #     naics_code += chunk.choices[0].delta.content or ""
                 
                 # Display results
                 st.success(f"NAICS code determined: {naics_code.strip()}")
