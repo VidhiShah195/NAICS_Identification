@@ -124,8 +124,9 @@ with col1:
                 
             # Display a loading message
             with st.spinner("NAICS code loading..."):
-                load_dotenv()
-                api_key = os.getenv("APIkey")
+                # load_dotenv()
+                # api_key = os.getenv("APIkey")
+                api_key = st.secrets["general"]["APIkey"]
                 client = Groq(api_key=api_key)
 
                 # Prompt preparation
