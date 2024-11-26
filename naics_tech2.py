@@ -115,7 +115,7 @@ with col1:
                 - NAICS Industry: [Industry Name]
                 - National Industry: [National Industry]
 
-                No other text or explanation is required.
+                NO OTHER TEXT OR EXPLAINATION IS REQUIRED.
                 """
 
                 completion = client.chat.completions.create(
